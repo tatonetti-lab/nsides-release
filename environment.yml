@@ -4,6 +4,8 @@ channels:
 dependencies:
   - conda-forge::ipykernel=5.1.2
   - conda-forge::ipywidgets=7.5.1
+  - conda-forge::mysqlclient=1.4.3
+  - conda-forge::mysql-connector-python=8.0.17
   - conda-forge::nb_conda_kernels=2.2.2
   - conda-forge::notebook=6.0.1
   - conda-forge::numpy=1.17.2
