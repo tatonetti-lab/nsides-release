@@ -1,6 +1,44 @@
 # nsides
 Analysis notebooks and database interaction scripts for the nsides project
 
+# Overview - Steps to run everything
+
+1. Create file map (`nb/1.create_file_map.ipynb`)
+2. Download from the MYSQL database all outcomes (MedDRA concepts) (`nb/2.get_outcomes_meddra.ipynb`)
+3. Create reformatted matrices of exposures and outcomes, also saving the id-to-index keys as vectors (`nb/3.reformat_exposures_outcomes.ipynb`)
+4. Compute all propensity scores (by averaging across the 20 bootstrap iterations, and only those iterations where AUC > 0.5) (`nb/4.compute_scores.py`)
+5. Compute all disproportionality statistics (PRR, PRR_error, A, B, C, D, and mean (reporting frequency)) (`nb/5.compute_prr.py`)
+6. Combine all disproportionality data into a single file. (Originally split to allow parallelization) (`nb/6.combine_prr.ipynb`)
+7. Attach to database and insert data (`nb/7.insert_offsides.ipynb`)
+
+The above steps are sufficient for the OFFSIDES database, but must be repeated for the TWOSIDES and further combination tables.
+
+# Method notes
+
+### PRR
+
+A contingency table can be drawn using exposed and unexposed cohorts produced by propensity score matching.
+
+|  | Had outcome | Didn't have outcome |
+| -- | -- | -- |
+| Drug exposed | A | B |
+| Not drug exposed | C | D |
+
+Using these definitions,
+
+<img src="https://latex.codecogs.com/svg.latex?PRR&space;=&space;\frac{\frac{A}{A&plus;B}}{\frac{C}{C&plus;D}}" title="PRR = \frac{\frac{A}{A+B}}{\frac{C}{C+D}}" />
+
+and the error is
+
+<img src="https://latex.codecogs.com/svg.latex?PRR_s&space;=&space;\sqrt{\frac{1}{A}&space;&plus;&space;\frac{1}{C}&space;-&space;\frac{1}{A&plus;B}&space;-&space;\frac{1}{C&plus;D}}" title="PRR_s = \sqrt{\frac{1}{A} + \frac{1}{C} - \frac{1}{A+B} - \frac{1}{C+D}}" />
+
+Several consequences of these definitions should be taken into account when inspecting the data.
+
+* PRR is `NaN` when both A and C are zero.
+* PRR is `Inf` when C is zero but A is greater than zero.
+* PRR is zero when A is zero and C is not zero.
+* PRR_s is `Inf` when A or C or both is zero.
+
 # Setup
 
 The notebooks and scripts in this repository expect that certain source files are properly located.
@@ -8,7 +46,6 @@ The `data/` layout I employed is the following:
 
 ```
 .
-+-- _config.yml
 +-- data
 |   +-- aeolus
 |   |   +-- AEOLUS_all_reports_IN_0.npy
@@ -56,6 +93,8 @@ Of the 3453 unique drugs, only ultimately 2757 have propensity score files.
 The files in this directory are compressed `numpy.ndarray`s stored in the `.npz` format.
 Because this format is intended to enable the storage of multiple arrays, the scores can be accessed by loading the `.npz` file with `numpy.load()`, and the extracting scores using an attribute of the loaded file (ie. `loaded['scores']`).
 
+These files are each between 50 KB and 11 MB.
+
 ### `prr`
 
 `prr` is also initially empty, and it also comes to be filled with one file per drug (the same 2757 as in `scores`).
@@ -76,9 +115,5 @@ In cases where every bin having an exposed report also had at least one unexpose
 However, there were some cases in which a bin had only exposed reports.
 In these cases simply no unexposed cases were added for the bin.
 
-# Steps
-
-1. Create file map
-2. Create reformatted matrices of exposures and outcomes, also saving the id-to-index keys as vectors
-3. Compute all propensity scores (by averaging across the 20 bootstrap iterations, and only those iterations where AUC > 0.5)
-4. Compute all disproportionality statistics (PRR, PRR_error, A, B, C, D, and mean (reporting frequency))
+These files are each between 8 and 160 KB.
+The combined, `data/full_prr.csv.xz` file is 52 MB, though it excludes rows with $PRR = `NaN`$.
