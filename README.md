@@ -21,8 +21,8 @@ A contingency table can be drawn using exposed and unexposed cohorts produced by
 
 |  | Had outcome | Didn't have outcome |
 | -- | -- | -- |
-| Drug exposed | A | B |
-| Not drug exposed | C | D |
+| **Drug exposed** | A | B |
+| **Not drug exposed** | C | D |
 
 Using these definitions,
 
@@ -64,6 +64,7 @@ The `data/` layout I employed is the following:
 |   |   +-- ... (not all-inclusive)
 |   |   +-- 4391.csv.xz
 |   +-- meta
+|   +-- tables
 ```
 
 ### `aeolus`
@@ -117,3 +118,30 @@ In these cases simply no unexposed cases were added for the bin.
 
 These files are each between 8 and 160 KB.
 The combined, `data/full_prr.csv.xz` file is 52 MB, though it excludes rows with $PRR = `NaN`$.
+
+### `meta`
+
+This directory is for a number of files, including the following:
+
+* `all_auc.csv`
+    * Built in `nb/4.compute_scores.py` from the `log_lrc_**__**.npy` files in `archives/scores_*.tgz` archives.
+* `all_drug_exposures.npz`
+    * Matrix of reports by drugs. Built in `nb/3.reformat_exposures_outcomes.ipynb`.
+* `all_outcomes_meddra.npz`
+    * Matrix of reports by outcomes. Built in `nb/3.reformat_exposures_outcomes.ipynb`.
+* `all_reportids_IN.npy`
+    * Vector giving the report ID at each index in the matrix
+* `drugs_vector.npy`
+    * Vector giving the drug ID at each index in the matrix. Built in `nb/3.reformat_exposures_outcomes.ipynb`.
+* `file_map.csv`
+    * Computed in `nb/1.create_file_map.ipynb`, this file shows where score and log files are located.
+* `outcomes_table.csv.xz`
+    * Equivalent to the `standard_case_outcome` table from `effect_aeolus` on mimir. Built in `nb/2.get_outcomes_meddra.ipynb`.
+* `outcomes_vector_meddra.npy`
+    * Vector giving the outcome ID at each index in the matrix. Built in `nb/3.reformat_exposures_outcomes.ipynb`.
+* `reports_outcomes.csv.xz`
+    * Essentially the information that we use from `outcomes_table.csv.xz` along with matrix indices. Built in `nb/3.reformat_exposures_outcomes.ipynb`.
+
+### `tables`
+
+This directory is for locally saving tables that will be later inserted into the `effect_nsides` MYSQL database.
