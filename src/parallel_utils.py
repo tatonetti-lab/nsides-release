@@ -1,3 +1,4 @@
+import re
 import tarfile
 
 import numpy as np
@@ -5,6 +6,43 @@ import pandas as pd
 
 import calculate_prr
 import compute_scores
+import utils
+
+
+def get_subfiles(archive_file_path, n_drugs):
+    file_locations = list()
+    tar = tarfile.open(archive_file_path, mode='r:gz')
+    subfiles = tar.getnames()
+
+    if n_drugs == 1:
+        for subfile in subfiles:
+            if 'interaction' in subfile:
+                drug = re.match(r'(?:interactions__)([0-9]+)(?:\.npy)', subfile)
+                if not drug:
+                    raise ValueError(f'{archive_file_path.name} contained {subfile} not matched')
+                drug = drug.group(1)
+                bootstrap = None
+                file_type = 'interaction'
+            else:
+                drug, bootstrap = utils.extract_indices(subfile)
+                file_type = re.match('^[a-z]+(?=_.+)', subfile).group()
+            file_locations.append([drug, bootstrap, file_type, subfile,
+                                   archive_file_path.name])
+    elif n_drugs == 2:
+        for subfile in subfiles:
+            if 'interaction' in subfile:
+                drugs = re.match(r'(?:interactions__)([0-9]+)(?:_)([0-9]+)(?=\.npy)', subfile)
+                if not drugs:
+                    raise ValueError(f'{archive_file_path.name} contained {subfile} not matched')
+                drugs = tuple(map(int, drugs.groups()))
+                file_type = 'interaction'
+            else:
+                assert 'scores' in subfile
+                drugs = utils.extract_indices_twosides(subfile)
+                file_type = 'scores'
+            file_locations.append([*drugs, file_type, subfile,
+                                   archive_file_path.name])
+    return file_locations
 
 
 def compute_propensity_scores(drug_index, files_map_df, computed_scores_path,
@@ -65,27 +103,19 @@ def compute_propensity_scores(drug_index, files_map_df, computed_scores_path,
     return [(drug_index, bootstrap, auc) for bootstrap, auc in bootstrap_to_auc.items()]
 
 
-def load_scores(drug_index, n_rows, scores_path):
-    """
-    Parameters
-    ----------
-    drug_index : int
-    n_rows : int
-    scores_path : pathlib.Path
-        Path to the directory where propensity scores for each drug are stored
-        as <drug index>.npz files.
+def extract_scores_twosides(tar_file_path, computed_scores_path):
+    """Extract all propensity score files from a tar file at the given path"""
+    tar = tarfile.open(tar_file_path, mode='r:gz')
+    members = tar.getmembers()
+    scores_members = [member for member in members if 'score' in member.name]
+    tar.extractall(path=computed_scores_path, members=scores_members)
 
-    Returns
-    -------
-    numpy.ndarray
-    """
-    score_path = scores_path.joinpath(f'{drug_index}.npz')
-    scores_item = np.load(score_path)
-
-    # Slice to the relevant number of reports (originally 4_838_588, not 4_694_086)
-    scores = scores_item['scores']
-    scores = scores[:n_rows]
-    return scores
+    # Rename files from 'scores_lrc__0_1.npy' to '0_1.npy'
+    for member in scores_members:
+        path = computed_scores_path.joinpath(member.name)
+        assert path.is_file()
+        new_name = re.match(r'(?:.+__)([0-9_]+\.npy)', member.name).group(1)
+        path.rename(path.parent.joinpath(new_name))
 
 
 def prr_one_drug(drug_index, all_exposures, all_outcomes, n_reports,
@@ -98,7 +128,7 @@ def prr_one_drug(drug_index, all_exposures, all_outcomes, n_reports,
     can then be mapped to an iterable of integers for each drug index and
     easily parallelized using `concurrent.futures.ProcessPoolExecutor`.
     """
-    scores = load_scores(drug_index, n_reports, scores_path)
+    scores = utils.load_scores_offsides(drug_index, n_reports, scores_path)
     drug_exposures = all_exposures[:, drug_index]
     A, a_plus_b, C, c_plus_d = calculate_prr.compute_ABCD_one_drug(drug_exposures,
                                                                    scores,
@@ -122,4 +152,57 @@ def prr_one_drug(drug_index, all_exposures, all_outcomes, n_reports,
         .filter(items=['drug_id', 'outcome_id', 'A', 'B', 'C', 'D',
                        'PRR', 'PRR_error', 'mean'])
     )
-    drug_df.to_csv(f'../data/prr/{drug_index}.csv.xz', index=False, compression='xz')
+    drug_df.to_csv(f'../data/prr/1/{drug_index}.csv.xz', index=False,
+                   compression='xz')
+
+
+def prr_one_combination(drug_indices, all_exposures, all_outcomes, n_reports,
+                        drug_id_vector, outcome_id_vector, scores_path):
+    """
+    Parameters
+    ----------
+    drug_indices : List[int] (or subscriptable array of int)
+        Assumed to be sorted from smallest to largest, as this is how the files
+        are named. Though note, the columns in the returned pandas.DataFrame
+        will not necessarily be sorted so that drug_1 < drug_2, etc. This is
+        because the values in these drug columns are IDs, and we don't want
+        to enforce a sorting method on IDs which may not be integers.
+    Other parameters are identical to the function for a single drug.
+    """
+    scores, indices_string = utils.load_scores_nsides(drug_indices, n_reports,
+                                                      scores_path)
+    drug_exposures = utils.compute_multi_exposure(drug_indices, all_exposures)
+
+    A, a_plus_b, C, c_plus_d = calculate_prr.compute_ABCD_one_drug(drug_exposures,
+                                                                   scores,
+                                                                   all_outcomes)
+
+    prr, prr_error = calculate_prr.compute_prr(A, a_plus_b, C, c_plus_d)
+    drug_df = (
+        pd.DataFrame()
+        .assign(
+            outcome_id=outcome_id_vector,
+            A=A,
+            B=a_plus_b - A,
+            C=C,
+            D=c_plus_d - C,
+            PRR=prr,
+            PRR_error=prr_error,
+        )
+    )
+
+    # Add IDs of drugs as columns drug_1, drug_2, ..., drug_n
+    drug_columns = list()
+    for i, drug_index in enumerate(drug_indices):
+        drug_df[f'drug_{i+1}'] = drug_id_vector[drug_index]
+        drug_columns.append(f'drug_{i+1}')
+
+    drug_df = (
+        drug_df
+        # The first entry in the outcome vector is `None`
+        .query('not outcome_id.isnull()')
+        .filter(items=[*drug_columns, 'outcome_id', 'A', 'B', 'C', 'D',
+                       'PRR', 'PRR_error', 'mean'])
+    )
+    drug_df.to_csv(f'../data/prr/{len(drug_indices)}/{indices_string}.csv.xz',
+                   index=False, compression='xz')
