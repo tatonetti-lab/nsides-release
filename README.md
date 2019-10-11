@@ -81,6 +81,7 @@ The `data/` layout I employed is the following:
 |   |   +-- 2
 |   +-- meta
 |   +-- tables
+|   +-- output_archives
 ```
 
 ### `aeolus`

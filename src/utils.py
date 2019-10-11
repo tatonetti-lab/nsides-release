@@ -14,7 +14,7 @@ def extract_indices(filename):
 
 
 def extract_indices_twosides(filename):
-    drug_a, drug_b = re.match(r'(?:scores_lrc__)([0-9]+)(?:_)([0-9]+)(?=\.npy)',
+    drug_a, drug_b = re.match(r'([0-9]+)(?:_)([0-9]+)(?=\.npy)',
                               filename).groups()
     drug_a, drug_b = int(drug_a), int(drug_b)
     return drug_a, drug_b
@@ -72,7 +72,7 @@ def load_scores_offsides(drug_index, n_rows, scores_path):
 
 def load_scores_nsides(drug_indices, n_rows, scores_path):
     indices_string = '_'.join(map(str, drug_indices))
-    score_path = scores_path.joinpath(f'scores_lrc__{indices_string}.npy')
+    score_path = scores_path.joinpath(indices_string + '.npy')
     scores = np.load(score_path)
 
     # Slice to the relevant number of reports (originally 4_838_588, not 4_694_086)

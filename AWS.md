@@ -10,7 +10,7 @@
 ## Required data files
 
 * data/meta/drug_exposure_matrix.npz
-* data/meta/drug_exposure_id_vector.npz
+* data/meta/drug_id_vector.npz
 * data/meta/outcome_matrix.npz
 * data/meta/outcome_id_vector.npz
 * data/meta/report_id_vector.npz
@@ -28,3 +28,12 @@
 * data/prr/2/*.csv.xz
 * data/tables/offsides.csv.xz
 * data/tables/twosides.csv.xz
+
+## Files to-be-output (not deleted)
+
+* data/meta/file_map_offsides.csv
+* data/meta/file_map_twosides.csv
+* data/tables/offsides.csv.xz
+* data/tables/twosides.csv.xz
+* data/output_archives/offsides_propensity_scores.tar.xz
+* data/output_archives/twosides_propensity_scores.tar.xz

@@ -119,7 +119,7 @@ def extract_scores_twosides(tar_file_path, computed_scores_path):
 
 
 def prr_one_drug(drug_index, all_exposures, all_outcomes, n_reports,
-                 drug_id_vector, outcome_id_vector, scores_path):
+                 drug_id_vector, outcome_id_vector, scores_path, save_path):
     """
     Helper function to compute and save disproportionality statistics for a
     given drug. To use with `concurrent.futures` most easily, the user should
@@ -152,12 +152,12 @@ def prr_one_drug(drug_index, all_exposures, all_outcomes, n_reports,
         .filter(items=['drug_id', 'outcome_id', 'A', 'B', 'C', 'D',
                        'PRR', 'PRR_error', 'mean'])
     )
-    drug_df.to_csv(f'../data/prr/1/{drug_index}.csv.xz', index=False,
+    drug_df.to_csv(save_path.joinpath(f'{drug_index}.csv.xz'), index=False,
                    compression='xz')
 
 
 def prr_one_combination(drug_indices, all_exposures, all_outcomes, n_reports,
-                        drug_id_vector, outcome_id_vector, scores_path):
+                        drug_id_vector, outcome_id_vector, scores_path, save_path):
     """
     Parameters
     ----------
@@ -204,5 +204,5 @@ def prr_one_combination(drug_indices, all_exposures, all_outcomes, n_reports,
         .filter(items=[*drug_columns, 'outcome_id', 'A', 'B', 'C', 'D',
                        'PRR', 'PRR_error', 'mean'])
     )
-    drug_df.to_csv(f'../data/prr/{len(drug_indices)}/{indices_string}.csv.xz',
+    drug_df.to_csv(save_path.joinpath(indices_string + '.csv.xz'),
                    index=False, compression='xz')
