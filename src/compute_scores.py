@@ -1,34 +1,8 @@
 import os
-import tarfile
 
 import numpy as np
 
-
-def extract_drug_files(tar_path_to_members, extract_dir):
-    """
-    Extract member files from a number of tar archives, returning extracted
-    paths.
-
-    Parameters
-    ----------
-    tar_path_to_members : Dict[pathlib.Path, List[tarfile.TarInfo]]
-        Dictionary mapping tar file paths to the member files to extract
-    extract_dir : pathlib.Path
-        The directory into which files should be extracted
-
-    Returns
-    -------
-    Dict[tarfile.TarInfo, pathlib.Path]
-        A map from tar member files to their file paths once extracted
-    """
-    file_name_to_extracted_path = dict()
-    for archive_path, member_files in tar_path_to_members.items():
-        tar = tarfile.open(archive_path)
-        tar.extractall(path=extract_dir, members=member_files)
-        file_name_to_extracted_path.update(
-            {member: extract_dir.joinpath(member.name) for member in member_files}
-        )
-    return file_name_to_extracted_path
+import utils
 
 
 def compute_average_propensity_score(score_file_paths):
@@ -78,7 +52,8 @@ def get_drug_bootstrap_auc(drug_df, temporary_directory):
 
     # Extract all log files associated with the drug, across all archives that
     #  contains log files
-    log_file_to_extracted_path = extract_drug_files(archive_to_logs, temporary_directory)
+    log_file_to_extracted_path = utils.extract_drug_files(archive_to_logs,
+                                                          temporary_directory)
     log_files_df = log_files_df.assign(
         extracted_path=lambda df: df['member'].map(log_file_to_extracted_path),
     )
@@ -130,7 +105,8 @@ def get_drug_scores(drug_df, temporary_directory):
 
     # Extract all score files associated with the drug, across all archives that
     #  contains score files
-    score_file_extracted_paths = extract_drug_files(archive_to_scores, temporary_directory)
+    score_file_extracted_paths = utils.extract_drug_files(archive_to_scores,
+                                                          temporary_directory)
     if len(score_file_extracted_paths.values()) == 0:
         return None
 

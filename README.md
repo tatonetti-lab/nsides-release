@@ -3,15 +3,19 @@ Analysis notebooks and database interaction scripts for the nsides project
 
 # Overview - Steps to run everything
 
-1. Create file map (`nb/1.create_file_map.ipynb`)
-2. Download from the MYSQL database all outcomes (MedDRA concepts) (`nb/2.get_outcomes_meddra.ipynb`)
-3. Create reformatted matrices of exposures and outcomes, also saving the id-to-index keys as vectors (`nb/3.reformat_exposures_outcomes.ipynb`)
-4. Compute all propensity scores (by averaging across the 20 bootstrap iterations, and only those iterations where AUC > 0.5) (`nb/4.compute_scores.py`)
-5. Compute all disproportionality statistics (PRR, PRR_error, A, B, C, D, and mean (reporting frequency)) (`nb/5.compute_prr.py`)
-6. Combine all disproportionality data into a single file. (Originally split to allow parallelization) (`nb/6.combine_prr.ipynb`)
-7. Attach to database and insert data (`nb/7.insert_offsides.ipynb`)
+### Preprocessing
 
-The above steps are sufficient for the OFFSIDES database, but must be repeated for the TWOSIDES and further combination tables.
+1. Download from the MYSQL database all outcomes (MedDRA concepts) (`nb/pre/1.get_outcomes_meddra.ipynb`)
+2. Create reformatted matrices of exposures and outcomes, also saving the id-to-index keys as vectors (`nb/pre/2.reformat_exposures_outcomes.ipynb`)
+
+### Computation
+
+1. Create file maps for OFFSIDES and TWOSIDES (`nb/1.create_file_maps.ipynb`)
+2. Compute all propensity scores (by averaging across the 20 bootstrap iterations, and only those iterations where AUC > 0.5) (`nb/2.compute_average_propensity_scores_offsides.py`)
+3. Compute all disproportionality statistics for OFFSIDES (PRR, PRR_error, A, B, C, D, and mean (reporting frequency)) (`nb/3.compute_prr_offsides.ipynb`)
+4. Create a file map for TWOSIDES (`nb/6.create_twosides_file_map.ipynb`)
+5. Compute all disproportionality statistics for TWOSIDES (PRR, PRR_error, A, B, C, D, and mean (reporting frequency)) (`nb/7.compute_prr.py`)
+6. Combine all disproportionality data into single files, one for each `n` (ie. `offsides_prr.csv.xz`, `twosides.csv.xz`). (The PRR files were originally split to allow parallelization) (`nb/8.combine_prr.ipynb`)
 
 # Method notes
 
@@ -52,19 +56,32 @@ The `data/` layout I employed is the following:
 |   |   +-- ... (all-inclusive)
 |   |   +-- AEOLUS_all_reports_IN_54.npy
 |   +-- archives
-|   |   +-- scores_1.tgz
-|   |   +-- ... (all-inclusive)
-|   |   +-- scores_220.tgz
+|   |   +-- 1
+|   |   |   +-- scores_1.tgz
+|   |   |   +-- ... (all-inclusive)
+|   |   |   +-- scores_220.tgz
+|   |   +-- 2
+|   |   |   +-- scores_1.tgz
+|   |   |   +-- ... (all-inclusive)
+|   |   |   +-- scores_?.tgz
 |   +-- scores
-|   |   +-- 0.npz
-|   |   +-- ... (not all-inclusive)
-|   |   +-- 4391.npz
+|   |   +-- 1
+|   |   |   +-- 0.npz
+|   |   |   +-- ... (not all-inclusive)
+|   |   |   +-- 4391.npz
+|   |   +-- 2
+|   |   |   +-- ?_?.npz
+|   |   |   +-- ... (not all-inclusive)
+|   |   |   +-- ?_?.npz
 |   +-- prr
-|   |   +-- 0.csv.xz
-|   |   +-- ... (not all-inclusive)
-|   |   +-- 4391.csv.xz
+|   |   +-- 1
+|   |   |   +-- 0.csv.xz
+|   |   |   +-- ... (not all-inclusive)
+|   |   |   +-- 4391.csv.xz
+|   |   +-- 2
 |   +-- meta
 |   +-- tables
+|   +-- output_archives
 ```
 
 ### `aeolus`
@@ -82,6 +99,7 @@ When possible, I have attempted to make these path assignments in obvious locati
 ### `archives`
 
 `archives` contains `.tgz` (`.tar.gz`) archives of propensity scores for each drug.
+The first subdirectories tell whether the archives are for OFFSIDES, TWOSIDES, ...
 The computation of these involved 20 bootstrap iterations per drug, meaning that within these archives are 20 propensity score files for each drug, which should be averaged to find the final propensity scores used for later computation.
 Each archive contains files of these bootstrap iteration propensity scores (`scores_lrc_<drug>__<boostrap>.npy`), as well as performance metrics for each of these files (`log_lrc_<drug>__<bootstrap>.npy`).
 In computing the average, I used only those bootstrap iterations which had an AUROC > 0.5.
@@ -89,6 +107,7 @@ In computing the average, I used only those bootstrap iterations which had an AU
 ### `scores`
 
 This directory is initially empty but comes to be filled with files for each drug.
+The first subdirectories tell whether the archives are for OFFSIDES, TWOSIDES, ...
 Because I only averaged those bootstrap iterations with AUC > 0.5, some drugs do not have corresponding propensity score files.
 Of the 3453 unique drugs, only ultimately 2757 have propensity score files.
 The files in this directory are compressed `numpy.ndarray`s stored in the `.npz` format.
@@ -99,6 +118,7 @@ These files are each between 50 KB and 11 MB.
 ### `prr`
 
 `prr` is also initially empty, and it also comes to be filled with one file per drug (the same 2757 as in `scores`).
+The first subdirectories tell whether the archives are for OFFSIDES, TWOSIDES, ...
 These files correspond to disproportionality statistics for a given drug and all (MedDRA) outcomes.
 Each file is a `.csv` file compressed using the LZMA algorithm (result is an `.xz` file).
 The columns of these files are the following: drug_id (RxNorm ID), outcome_id (MedDRA ID), A, B, C, D, PRR, and PRR_error.

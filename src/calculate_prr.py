@@ -6,8 +6,11 @@ import numpy as np
 def compute_ABCD_one_drug(drug_exposures, drug_propensity_scores, all_outcomes,
                           bins=np.arange(0, 1.2, 0.2), seed=0):
     """
-    Compute the propensity score matched numbers of reports with combinations
-    of drug exposure and outcome occurrence.
+    Compute the propensity-score-matched numbers of reports with combinations
+    of drug exposure and outcome occurrence. Note that for simplicity, "drug"
+    refers to a specific single drug or a specific combination of drugs. When
+    computing PRR for drug pairs (eg. TWOSIDES), then a "drug" refers to a
+    particular combination of drugs, though all parameter types stay the same.
 
     Parameters
     ----------
