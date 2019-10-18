@@ -70,12 +70,14 @@ def load_scores_offsides(drug_index, n_rows, scores_path):
     return scores
 
 
-def load_scores_nsides(score_path, n_rows):
+def load_scores_nsides(drug_indices, n_rows, scores_path):
+    indices_string = '_'.join(map(str, drug_indices))
+    score_path = scores_path.joinpath(indices_string + '.npy')
     scores = np.load(score_path)
 
     # Slice to the relevant number of reports (originally 4_838_588, not 4_694_086)
     scores = scores[:n_rows]
-    return scores
+    return scores, indices_string
 
 
 def compute_multi_exposure(drug_indices, all_exposures):
