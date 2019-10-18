@@ -1,0 +1,136 @@
+ubuntu@ip-172-31-22-107:~/Documents/nsides/scripts$ bash run_all.sh
+Starting file 1 / 4
+ 55%|██████████████████████▋                  | 122/220 [09:39<11:05,  6.79s/it]
+^Z
+[1]+  Stopped                 bash run_all.sh
+ubuntu@ip-172-31-22-107:~/Documents/nsides/scripts$ bash run_all.sh
+Starting file 1 / 4
+100%|█████████████████████████████████████████| 220/220 [17:22<00:00,  4.74s/it]
+  0%|                                                  | 0/4533 [00:00<?, ?it/s]
+concurrent.futures.process._RemoteTraceback:
+"""
+Traceback (most recent call last):
+  File "/home/ubuntu/miniconda/envs/nsides/lib/python3.7/concurrent/futures/proc
+ess.py", line 232, in _process_worker
+    r = call_item.fn(*call_item.args, **call_item.kwargs)
+  File "/home/ubuntu/miniconda/envs/nsides/lib/python3.7/concurrent/futures/proc
+ess.py", line 191, in _process_chunk
+    return [fn(*args) for args in chunk]
+  File "/home/ubuntu/miniconda/envs/nsides/lib/python3.7/concurrent/futures/proc
+ess.py", line 191, in <listcomp>
+    return [fn(*args) for args in chunk]
+  File "../src/parallel_utils.py", line 41, in get_subfiles
+    drugs = utils.extract_indices_twosides(subfile)
+  File "../src/utils.py", line 18, in extract_indices_twosides
+    filename).groups()
+AttributeError: 'NoneType' object has no attribute 'groups'
+"""
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "1.compute_file_maps.py", line 63, in <module>
+    main()
+  File "1.compute_file_maps.py", line 59, in main
+    compute_twosides_map(archives_path, meta_path)
+  File "1.compute_file_maps.py", line 40, in compute_twosides_map
+    total=len(archive_files)
+  File "/home/ubuntu/miniconda/envs/nsides/lib/python3.7/site-packages/tqdm/std.
+py", line 1081, in __iter__
+    for obj in iterable:
+  File "/home/ubuntu/miniconda/envs/nsides/lib/python3.7/concurrent/futures/proc
+ess.py", line 476, in _chain_from_iterable_of_lists
+    for element in iterable:
+  File "/home/ubuntu/miniconda/envs/nsides/lib/python3.7/concurrent/futures/_bas
+e.py", line 586, in result_iterator
+    yield fs.pop().result()
+  File "/home/ubuntu/miniconda/envs/nsides/lib/python3.7/concurrent/futures/_bas
+e.py", line 432, in result
+    return self.__get_result()
+  File "/home/ubuntu/miniconda/envs/nsides/lib/python3.7/concurrent/futures/_bas
+e.py", line 384, in __get_result
+    raise self._exception
+AttributeError: 'NoneType' object has no attribute 'groups'
+  0%|                                                  | 0/4533 [00:06<?, ?it/s]
+Starting file 2 / 4
+  0%|                                                  | 0/4396 [00:00<?, ?it/s]
+concurrent.futures.process._RemoteTraceback:
+"""
+Traceback (most recent call last):
+  File "/home/ubuntu/miniconda/envs/nsides/lib/python3.7/concurrent/futures/proc
+ess.py", line 232, in _process_worker
+    r = call_item.fn(*call_item.args, **call_item.kwargs)
+  File "/home/ubuntu/miniconda/envs/nsides/lib/python3.7/concurrent/futures/proc
+ess.py", line 191, in _process_chunk
+    return [fn(*args) for args in chunk]
+  File "/home/ubuntu/miniconda/envs/nsides/lib/python3.7/concurrent/futures/proc
+ess.py", line 191, in <listcomp>
+    return [fn(*args) for args in chunk]
+  File "../src/parallel_utils.py", line 101, in compute_propensity_scores
+    scores=drug_scores)
+  File "<__array_function__ internals>", line 6, in savez_compressed
+  File "/home/ubuntu/miniconda/envs/nsides/lib/python3.7/site-packages/numpy/lib
+/npyio.py", line 704, in savez_compressed
+    _savez(file, args, kwds, True)
+  File "/home/ubuntu/miniconda/envs/nsides/lib/python3.7/site-packages/numpy/lib
+/npyio.py", line 730, in _savez
+    zipf = zipfile_factory(file, mode="w", compression=compression)
+  File "/home/ubuntu/miniconda/envs/nsides/lib/python3.7/site-packages/numpy/lib
+/npyio.py", line 119, in zipfile_factory
+    return zipfile.ZipFile(file, *args, **kwargs)
+  File "/home/ubuntu/miniconda/envs/nsides/lib/python3.7/zipfile.py", line 1204,
+ in __init__
+    self.fp = io.open(file, filemode)
+FileNotFoundError: [Errno 2] No such file or directory: '/data/scores/1/0.npz'
+"""
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "2.compute_extract_propensity_scores.py", line 78, in <module>
+    main()
+  File "2.compute_extract_propensity_scores.py", line 72, in main
+    temp_extract_dir)
+  File "2.compute_extract_propensity_scores.py", line 32, in compute_propensity_
+scores_offsides
+    total=len(drugs)
+  File "/home/ubuntu/miniconda/envs/nsides/lib/python3.7/site-packages/tqdm/std.
+py", line 1081, in __iter__
+    for obj in iterable:
+  File "/home/ubuntu/miniconda/envs/nsides/lib/python3.7/concurrent/futures/proc
+ess.py", line 476, in _chain_from_iterable_of_lists
+    for element in iterable:
+  File "/home/ubuntu/miniconda/envs/nsides/lib/python3.7/concurrent/futures/_bas
+e.py", line 586, in result_iterator
+    yield fs.pop().result()
+  File "/home/ubuntu/miniconda/envs/nsides/lib/python3.7/concurrent/futures/_bas
+e.py", line 432, in result
+    return self.__get_result()
+  File "/home/ubuntu/miniconda/envs/nsides/lib/python3.7/concurrent/futures/_bas
+e.py", line 384, in __get_result
+    raise self._exception
+FileNotFoundError: [Errno 2] No such file or directory: '/data/scores/1/0.npz'
+  0%|                                                  | 0/4396 [06:41<?, ?it/s]
+Starting file 3 / 4
+Exposures: (4694086, 4396), Outcomes: (4694086, 17552)
+0it [00:00, ?it/s]
+0it [00:00, ?it/s]
+Starting file 4 / 4
+0it [00:00, ?it/s]
+0it [00:00, ?it/s]
+HBox(children=(IntProgress(value=1, bar_style='info', max=1), HTML(value='')))
+
+HBox(children=(IntProgress(value=1, bar_style='info', max=1), HTML(value='')))
+
+Finished all!
+ubuntu@ip-172-31-22-107:~/Documents/nsides/scripts$ ls /data/scores/1/ --sort
+ls: option '--sort' requires an argument
+Try 'ls --help' for more information.
+ubuntu@ip-172-31-22-107:~/Documents/nsides/scripts$ man ls
+ubuntu@ip-172-31-22-107:~/Documents/nsides/scripts$ ll /data/scores/1/
+ls: cannot access '/data/scores/1/': No such file or directory
+ubuntu@ip-172-31-22-107:~/Documents/nsides/scripts$ ls /data/
+interactions  meta  output_archives
+ubuntu@ip-172-31-22-107:~/Documents/nsides/scripts$ ls /data/output_archives/
+offsides_propensity_scores.tar.xz  twosides_propensity_scores.tar.xz
+ubuntu@ip-172-31-22-107:~/Documents/nsides/scripts$

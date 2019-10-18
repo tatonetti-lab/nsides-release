@@ -29,37 +29,38 @@ def combine_files_to_archive(file_paths, save_path):
 
 
 def main():
-    shutil.rmtree('../data/extract_dir/')
+    # shutil.rmtree('/data/extract_dir/')
 
-    data_path = pathlib.Path('../data/')
-    tables_path = pathlib.Path('../data/tables/')
-    output_archive_path = pathlib.Path('../data/output_archives/')
+    data_path = pathlib.Path('/data/')
+    tables_path = pathlib.Path('/data/tables/')
+    output_archive_path = pathlib.Path('/data/output_archives/')
+    output_archive_path.mkdir(exist_ok=True)
 
     # Combine OFFSIDES PRR files and save to a single table file
     combine_prr_files(data_path.joinpath('prr/1/'),
                       tables_path.joinpath('offsides.csv.xz'))
 
     # Combine TWOSIDES PRR files and save to a single table file
-    combine_prr_files(data_path.joinpath('prr/2/'),
-                      tables_path.joinpath('twosides.csv.xz'))
+    # combine_prr_files(data_path.joinpath('prr/2/'),
+    #                   tables_path.joinpath('twosides.csv.xz'))
 
-    shutil.rmtree('../data/prr/')
+    # shutil.rmtree('/data/prr/')
 
     # Save OFFSIDES propensity score files
-    combine_files_to_archive(
-        list(data_path.glob('scores/1/*.csv.xz')),
-        output_archive_path.joinpath('offsides_propensity_scores.tar.xz')
-    )
+    # combine_files_to_archive(
+    #     list(data_path.glob('scores/1/*.csv.xz')),
+    #     output_archive_path.joinpath('offsides_propensity_scores.tar.xz')
+    # )
 
     # Save TWOSIDES propensity score files
-    combine_files_to_archive(
-        list(data_path.glob('scores/2/*.csv.xz')),
-        output_archive_path.joinpath('twosides_propensity_scores.tar.xz')
-    )
+    # combine_files_to_archive(
+    #     list(data_path.glob('scores/2/*.csv.xz')),
+    #     output_archive_path.joinpath('twosides_propensity_scores.tar.xz')
+    # )
 
-    shutil.rmtree('../data/scores/')
+    # shutil.rmtree('/data/scores/')
 
-    shutil.rmtree('../data/archives/')
+    # shutil.rmtree('/data/archives/')
 
 
 if __name__ == "__main__":

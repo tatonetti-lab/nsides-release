@@ -11,8 +11,13 @@ import utils
 
 def get_subfiles(archive_file_path, n_drugs):
     file_locations = list()
-    tar = tarfile.open(archive_file_path, mode='r:gz')
-    subfiles = tar.getnames()
+    try:
+        tar = tarfile.open(archive_file_path, mode='r:gz')
+        subfiles = tar.getnames()
+    except tarfile.ReadError:
+        return None
+    except EOFError:
+        return None
 
     if n_drugs == 1:
         for subfile in subfiles:
@@ -30,17 +35,12 @@ def get_subfiles(archive_file_path, n_drugs):
                                    archive_file_path.name])
     elif n_drugs == 2:
         for subfile in subfiles:
-            if 'interaction' in subfile:
-                drugs = re.match(r'(?:interactions__)([0-9]+)(?:_)([0-9]+)(?=\.npy)', subfile)
-                if not drugs:
-                    raise ValueError(f'{archive_file_path.name} contained {subfile} not matched')
-                drugs = tuple(map(int, drugs.groups()))
-                file_type = 'interaction'
-            else:
-                assert 'scores' in subfile
-                drugs = utils.extract_indices_twosides(subfile)
-                file_type = 'scores'
-            file_locations.append([*drugs, file_type, subfile,
+            file_name_match = re.match(r'([a-z]+)(?:.*?__)([0-9]+)(?:_)([0-9]+)(?=\.npy)', subfile)
+            if not file_name_match:
+                 raise ValueError(f'{archive_file_path.name} contained {subfile} not matched')
+            file_type, drug_1, drug_2 = file_name_match.groups()
+            drug_1, drug_2 = int(drug_1), int(drug_2)
+            file_locations.append([drug_1, drug_2, file_type, subfile,
                                    archive_file_path.name])
     return file_locations
 

@@ -65,16 +65,18 @@ def compute_prr_twosides(propensity_scores_path, prr_save_path,
 
 def main():
     # User-specified directory paths
-    meta_files_path = pathlib.Path('../data/meta/')
-    propensity_scores_path = pathlib.Path('../data/scores/')
-    prr_save_path = pathlib.Path('../data/prr/')
+    meta_files_path = pathlib.Path('/data/meta/')
+    propensity_scores_path = pathlib.Path('/data/scores/')
+
+    prr_save_path = pathlib.Path('/data/prr/')
+    prr_save_path.mkdir(exist_ok=True)
 
     # Load matrices of reports by exposures and outcomes
     report_exposure_matrix = scipy.sparse.load_npz(
-        meta_files_path.joinpath('all_drug_exposures.npz')
+        meta_files_path.joinpath('drug_exposure_matrix.npz')
     )
     report_outcome_matrix = scipy.sparse.load_npz(
-        meta_files_path.joinpath('all_outcomes_meddra.npz')
+        meta_files_path.joinpath('outcome_matrix.npz')
     )
 
     print(f'Exposures: {report_exposure_matrix.shape},'
@@ -82,21 +84,21 @@ def main():
 
     # Load vectors of the ids at each index for exposures and outcomes
     drug_id_vector = np.load(
-        meta_files_path.joinpath('drugs_vector.npy')
+        meta_files_path.joinpath('drug_id_vector.npy')
     ).astype(str)
     outcome_id_vector = np.load(
-        meta_files_path.joinpath('outcomes_vector_meddra.npy')
+        meta_files_path.joinpath('outcome_id_vector.npy')
     )
 
-    # compute_prr_offsides(propensity_scores_path.joinpath('1/'),
-    #                      prr_save_path.joinpath('1/'),
-    #                      report_exposure_matrix, report_outcome_matrix,
-    #                      drug_id_vector, outcome_id_vector)
-
-    compute_prr_twosides(propensity_scores_path.joinpath('2/'),
-                         prr_save_path.joinpath('2/'),
+    compute_prr_offsides(propensity_scores_path.joinpath('1/'),
+                         prr_save_path.joinpath('1/'),
                          report_exposure_matrix, report_outcome_matrix,
                          drug_id_vector, outcome_id_vector)
+
+    # compute_prr_twosides(propensity_scores_path.joinpath('2/'),
+    #                      prr_save_path.joinpath('2/'),
+    #                      report_exposure_matrix, report_outcome_matrix,
+    #                      drug_id_vector, outcome_id_vector)
 
 
 if __name__ == "__main__":

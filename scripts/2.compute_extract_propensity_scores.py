@@ -55,21 +55,27 @@ def compute_propensity_scores_twosides(archives_path, computed_scores_path):
 
 def main():
     # User-specified directory paths
-    meta_files_path = pathlib.Path('../data/meta/')
-    archives_path = pathlib.Path('../data/archives/')
+    meta_files_path = pathlib.Path('/data/meta/')
+    archives_path = pathlib.Path('/data/archives/')
 
-    temp_extract_dir = pathlib.Path('../data/extract_dir/')
+    # Directory for extracting and temporarily storing files
+    temp_extract_dir = pathlib.Path('/data/extract_dir/')
     temp_extract_dir.mkdir(exist_ok=True)
 
-    computed_scores_path = pathlib.Path('../data/scores/')
+    # Directory where computed score files will be stored
+    computed_scores_path = pathlib.Path('/data/scores/')
     computed_scores_path.mkdir(exist_ok=True)
+
+    # Create subdirectories for OFFSIDES and TWOSIDES scores
+    computed_scores_path.joinpath('1/').mkdir(exist_ok=True)
+    computed_scores_path.joinpath('2/').mkdir(exist_ok=True)
 
     compute_propensity_scores_offsides(meta_files_path,
                                        archives_path.joinpath('1/'),
                                        computed_scores_path.joinpath('1/'),
                                        temp_extract_dir)
-    compute_propensity_scores_twosides(archives_path.joinpath('2/'),
-                                       computed_scores_path.joinpath('2/'))
+    # compute_propensity_scores_twosides(archives_path.joinpath('2/'),
+    #                                    computed_scores_path.joinpath('2/'))
 
 
 if __name__ == "__main__":

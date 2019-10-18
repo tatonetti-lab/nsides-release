@@ -14,7 +14,7 @@ def extract_indices(filename):
 
 
 def extract_indices_twosides(filename):
-    drug_a, drug_b = re.match(r'([0-9]+)(?:_)([0-9]+)(?=\.npy)',
+    drug_a, drug_b = re.match(r'(?:.+__)([0-9]+)(?:_)([0-9]+)(?=\.npy)',
                               filename).groups()
     drug_a, drug_b = int(drug_a), int(drug_b)
     return drug_a, drug_b
