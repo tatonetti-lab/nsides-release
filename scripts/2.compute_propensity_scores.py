@@ -39,43 +39,23 @@ def compute_propensity_scores_offsides(meta_files_path, archives_path,
                       index=False)
 
 
-def compute_propensity_scores_twosides(archives_path, computed_scores_path):
-    """Simply extract score files from `.tgz` (`.tar.gz`) archives to `.npz`"""
-    extract_scores_partial = functools.partial(
-        parallel_utils.extract_scores_twosides,
-        computed_scores_path=computed_scores_path
-    )
-
-    tar_file_paths = list(archives_path.glob('*.tgz'))
-
-    with concurrent.futures.ProcessPoolExecutor() as executor:
-        list(tqdm.tqdm(executor.map(extract_scores_partial, tar_file_paths),
-                       total=len(tar_file_paths)))
-
-
 def main():
     # User-specified directory paths
     meta_files_path = pathlib.Path('/data/meta/')
-    archives_path = pathlib.Path('/data/archives/')
+    archives_path = pathlib.Path('/data/archives/1/')
 
     # Directory for extracting and temporarily storing files
     temp_extract_dir = pathlib.Path('/data/extract_dir/')
     temp_extract_dir.mkdir(exist_ok=True)
 
     # Directory where computed score files will be stored
-    computed_scores_path = pathlib.Path('/data/scores/')
-    computed_scores_path.mkdir(exist_ok=True)
-
-    # Create subdirectories for OFFSIDES and TWOSIDES scores
-    computed_scores_path.joinpath('1/').mkdir(exist_ok=True)
-    computed_scores_path.joinpath('2/').mkdir(exist_ok=True)
+    computed_scores_path = pathlib.Path('/data/scores/1/')
+    computed_scores_path.mkdir(parents=True, exist_ok=True)
 
     compute_propensity_scores_offsides(meta_files_path,
-                                       archives_path.joinpath('1/'),
-                                       computed_scores_path.joinpath('1/'),
+                                       archives_path,
+                                       computed_scores_path,
                                        temp_extract_dir)
-    # compute_propensity_scores_twosides(archives_path.joinpath('2/'),
-    #                                    computed_scores_path.joinpath('2/'))
 
 
 if __name__ == "__main__":

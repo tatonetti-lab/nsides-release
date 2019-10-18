@@ -37,7 +37,7 @@ def get_subfiles(archive_file_path, n_drugs):
         for subfile in subfiles:
             file_name_match = re.match(r'([a-z]+)(?:.*?__)([0-9]+)(?:_)([0-9]+)(?=\.npy)', subfile)
             if not file_name_match:
-                 raise ValueError(f'{archive_file_path.name} contained {subfile} not matched')
+                raise ValueError(f'{archive_file_path.name} contained {subfile} not matched')
             file_type, drug_1, drug_2 = file_name_match.groups()
             drug_1, drug_2 = int(drug_1), int(drug_2)
             file_locations.append([drug_1, drug_2, file_type, subfile,
@@ -47,6 +47,7 @@ def get_subfiles(archive_file_path, n_drugs):
 
 def compute_propensity_scores(drug_index, files_map_df, computed_scores_path,
                               temporary_directory):
+    # TODO: Refactor this into compute_scores.py and only wrap it here.
     """
     Parameters
     ----------
@@ -111,11 +112,15 @@ def extract_scores_twosides(tar_file_path, computed_scores_path):
     tar.extractall(path=computed_scores_path, members=scores_members)
 
     # Rename files from 'scores_lrc__0_1.npy' to '0_1.npy'
+    extracted_paths = list()
     for member in scores_members:
         path = computed_scores_path.joinpath(member.name)
         assert path.is_file()
         new_name = re.match(r'(?:.+__)([0-9_]+\.npy)', member.name).group(1)
-        path.rename(path.parent.joinpath(new_name))
+        new_path = path.parent.joinpath(new_name)
+        path.rename(new_path)
+        extracted_paths.append(new_path)
+    return extracted_paths
 
 
 def prr_one_drug(drug_index, all_exposures, all_outcomes, n_reports,

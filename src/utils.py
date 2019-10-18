@@ -5,7 +5,7 @@ import numpy as np
 
 
 def extract_indices(filename):
-    match = re.match(f'(?:.+_lrc_)([0-9]+)(?:__)([0-9]+)(?:\.npy)', filename)
+    match = re.match(r'(?:.+_lrc_)([0-9]+)(?:__)([0-9]+)(?:\.npy)', filename)
     if match:
         bootstrap, drug = match.groups()
         return int(drug), int(bootstrap)
@@ -70,14 +70,12 @@ def load_scores_offsides(drug_index, n_rows, scores_path):
     return scores
 
 
-def load_scores_nsides(drug_indices, n_rows, scores_path):
-    indices_string = '_'.join(map(str, drug_indices))
-    score_path = scores_path.joinpath(indices_string + '.npy')
+def load_scores_nsides(score_path, n_rows):
     scores = np.load(score_path)
 
     # Slice to the relevant number of reports (originally 4_838_588, not 4_694_086)
     scores = scores[:n_rows]
-    return scores, indices_string
+    return scores
 
 
 def compute_multi_exposure(drug_indices, all_exposures):

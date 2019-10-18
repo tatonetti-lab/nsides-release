@@ -10,14 +10,14 @@ conda activate nsides
 
 # echo "Starting file 2 / 4"
 
-# python 2.compute_extract_propensity_scores.py
+# python 2.compute_propensity_scores.py
 
-# echo "Starting file 3 / 4"
+echo "Starting file 3 / 4"
 
-# python 3.compute_prr.py
+python 3.compute_prr.py
 
 echo "Starting file 4 / 4"
 
 python 4.combine_prr_clean.py
 
-# echo "Finished all!"
+echo "Finished all!"

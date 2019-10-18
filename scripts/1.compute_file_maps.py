@@ -56,7 +56,7 @@ def main():
     # Path where the file maps will be saved
     meta_path = pathlib.Path('/data/meta')
 
-    # compute_offsides_map(archives_path, meta_path)
+    compute_offsides_map(archives_path, meta_path)
     compute_twosides_map(archives_path, meta_path)
 
 
