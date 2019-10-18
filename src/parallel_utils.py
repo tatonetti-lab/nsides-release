@@ -106,8 +106,12 @@ def compute_propensity_scores(drug_index, files_map_df, computed_scores_path,
 
 def extract_scores_twosides(tar_file_path, computed_scores_path):
     """Extract all propensity score files from a tar file at the given path"""
-    tar = tarfile.open(tar_file_path, mode='r:gz')
-    members = tar.getmembers()
+    try:
+        tar = tarfile.open(tar_file_path, mode='r:gz')
+        members = tar.getmembers()
+    except:
+        return None
+
     scores_members = [member for member in members if 'score' in member.name]
     tar.extractall(path=computed_scores_path, members=scores_members)
 

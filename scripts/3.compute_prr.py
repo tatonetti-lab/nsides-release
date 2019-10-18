@@ -45,6 +45,9 @@ def prr_one_archive_twosides(archive_path, file_map, extract_dir,
     extracted_paths = parallel_utils.extract_scores_twosides(archive_path,
                                                              extract_dir)
 
+    if extracted_paths is None:
+        return
+
     # Get indices of drug combinations stored in the archive
     drug_indices = (
         file_map
@@ -138,7 +141,7 @@ def main():
     compute_prr_twosides(twosides_archives_path, twosides_file_map,
                          temp_extract_dir, report_exposure_matrix,
                          report_outcome_matrix, drug_id_vector,
-                         outcome_id_vector, prr_save_path)
+                         outcome_id_vector, prr_save_path.joinpath('2/'))
 
 
 if __name__ == "__main__":
