@@ -51,7 +51,8 @@ def prr_one_archive_twosides(archive_path, file_map, extract_dir,
 
     # Get indices of drug combinations stored in the archive
     drug_indices = [
-        utils.extract_indices_twosides(file.name) for file in extracted_paths
+        utils.extract_indices_twosides(file.name, original=False)
+        for file in extracted_paths
     ]
 
     prr_one_combo = functools.partial(
