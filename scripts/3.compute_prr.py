@@ -11,6 +11,7 @@ import tqdm
 
 sys.path.insert(0, '../src/')
 import parallel_utils  # noqa:E402
+import utils  # noqa:E402
 
 
 def compute_prr_offsides(propensity_scores_path, prr_save_path,
@@ -49,14 +50,9 @@ def prr_one_archive_twosides(archive_path, file_map, extract_dir,
         return
 
     # Get indices of drug combinations stored in the archive
-    drug_indices = (
-        file_map
-        .query(f'archive_file == "{archive_path.name}"')
-        .loc[:, ['drug_index_1', 'drug_index_2']]
-        .apply(list, axis=1)
-        .values
-        .tolist()
-    )
+    drug_indices = [
+        utils.extract_indices_twosides(file.name) for file in extracted_paths
+    ]
 
     prr_one_combo = functools.partial(
         parallel_utils.prr_one_combination,
@@ -102,7 +98,7 @@ def compute_prr_twosides(archives_path, file_map, extract_dir,
 def main():
     # User-specified directory paths
     meta_files_path = pathlib.Path('/data/meta/')
-    propensity_scores_path = pathlib.Path('/data/scores/')
+    # propensity_scores_path = pathlib.Path('/data/scores/')
     twosides_archives_path = pathlib.Path('/data/archives/2/')
     temp_extract_dir = pathlib.Path('/data/extract_dir/')
     temp_extract_dir.mkdir(exist_ok=True)
