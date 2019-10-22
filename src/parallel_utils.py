@@ -178,8 +178,13 @@ def prr_one_combination(drug_indices, all_exposures, all_outcomes, n_reports,
         to enforce a sorting method on IDs which may not be integers.
     Other parameters are identical to the function for a single drug.
     """
-    scores, indices_string = utils.load_scores_nsides(drug_indices, n_reports,
-                                                      scores_path)
+    # For some reason a number of files fail to load or don't contain data, etc.
+    try:
+        scores, indices_string = utils.load_scores_nsides(drug_indices, n_reports,
+                                                          scores_path)
+    except:
+        return
+
     drug_exposures = utils.compute_multi_exposure(drug_indices, all_exposures)
 
     A, a_plus_b, C, c_plus_d = calculate_prr.compute_ABCD_one_drug(drug_exposures,
