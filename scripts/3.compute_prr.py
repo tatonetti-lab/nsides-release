@@ -99,13 +99,15 @@ def compute_prr_twosides(archives_path, file_map, extract_dir,
 def main():
     # User-specified directory paths
     meta_files_path = pathlib.Path('/data/meta/')
-    # propensity_scores_path = pathlib.Path('/data/scores/')
+    propensity_scores_path = pathlib.Path('/data/scores/')
     twosides_archives_path = pathlib.Path('/data/archives/2/')
     temp_extract_dir = pathlib.Path('/data/extract_dir/')
     temp_extract_dir.mkdir(exist_ok=True)
 
     prr_save_path = pathlib.Path('/data/prr/')
     prr_save_path.mkdir(exist_ok=True)
+    prr_save_path.joinpath('1/').mkdir(exist_ok=True)
+    prr_save_path.joinpath('2/').mkdir(exist_ok=True)
 
     # Load matrices of reports by exposures and outcomes
     report_exposure_matrix = scipy.sparse.load_npz(
@@ -130,10 +132,10 @@ def main():
     twosides_file_map = pd.read_csv(meta_files_path
                                     .joinpath('file_map_twosides.csv'))
 
-    # compute_prr_offsides(propensity_scores_path.joinpath('1/'),
-    #                      prr_save_path.joinpath('1/'),
-    #                      report_exposure_matrix, report_outcome_matrix,
-    #                      drug_id_vector, outcome_id_vector)
+    compute_prr_offsides(propensity_scores_path.joinpath('1/'),
+                         prr_save_path.joinpath('1/'),
+                         report_exposure_matrix, report_outcome_matrix,
+                         drug_id_vector, outcome_id_vector)
 
     compute_prr_twosides(twosides_archives_path, twosides_file_map,
                          temp_extract_dir, report_exposure_matrix,

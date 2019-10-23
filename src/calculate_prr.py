@@ -38,7 +38,7 @@ def compute_ABCD_one_drug(drug_exposures, drug_propensity_scores, all_outcomes,
         of the non-drug-exposed reports from the propensity score matching
         procedure.
     """
-# Find the (row) indices of reports exposed to the drug
+    # Find the (row) indices of reports exposed to the drug
     exposed_indices, _ = drug_exposures.nonzero()
 
     # Default bins and this binning procedure were found in Rami's work.
