@@ -59,7 +59,7 @@ def compute_ABCD_one_drug(drug_exposures, drug_propensity_scores, all_outcomes,
             continue
 
         # Indices of all reports in this bin
-        reports_in_bin, _ = np.where(binned_scores == bin_number)
+        reports_in_bin = np.where(binned_scores == bin_number)[0]
         reports_in_bin = set(reports_in_bin.tolist())
 
         # Indices of exposed reports in this bin
