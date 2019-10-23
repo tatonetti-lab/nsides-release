@@ -38,18 +38,8 @@ def compute_ABCD_one_drug(drug_exposures, drug_propensity_scores, all_outcomes,
         of the non-drug-exposed reports from the propensity score matching
         procedure.
     """
-    # Find the (row) indices of reports exposed to the drug
+# Find the (row) indices of reports exposed to the drug
     exposed_indices, _ = drug_exposures.nonzero()
-
-    # A + B is the number exposed to the given drug
-    n_exposed = len(exposed_indices)
-
-    # A is the number exposed with the outcome.
-    #  Here computing A for all outcomes simultaneously, so exposed_with_outcome
-    #  is a vector where each index is an outcome and the value is the number
-    # drug exposed with the outcome.
-    exposed_with_outcome = all_outcomes[exposed_indices].sum(axis=0)
-    exposed_with_outcome = np.array(exposed_with_outcome).flatten()
 
     # Default bins and this binning procedure were found in Rami's work.
     #  Unlike the paper, this method does not divide the region of overlap
@@ -62,20 +52,38 @@ def compute_ABCD_one_drug(drug_exposures, drug_propensity_scores, all_outcomes,
     np.random.seed(seed)
 
     # Sample (with replacement) 10x unexposed for each exposed (bin-wise)
+    matched_exposed_indices = list()
     matched_unexposed_indices = list()
     for bin_number, num_exposed_bin in exposed_bin_freq.items():
-        available_unexposed_indices = set(np.where(binned_scores == bin_number)[0]) \
-            - set(exposed_indices)
-        # Same as Rami's code - if bin contains only exposed reports, add the
-        #  exposed reports to A and B, but add nothing to C and D from this bin
-        if not available_unexposed_indices:
+        if num_exposed_bin == 0:
             continue
 
-        unexposed_sample = np.random.choice(
-            list(available_unexposed_indices),
-            size=(10 * num_exposed_bin)
-        )
+        # Indices of all reports in this bin
+        reports_in_bin = set(np.where(binned_scores == bin_number))
+
+        # Indices of exposed reports in this bin
+        bin_exposed_indices = reports_in_bin.intersection(set(exposed_indices))
+        matched_exposed_indices.extend(list(bin_exposed_indices))
+
+        # Indices of unexposed reports in this bin
+        available_unexposed_indices = reports_in_bin - set(exposed_indices)
+
+        # The number of unexposed to sample
+        num_unexposed = 10 * num_exposed_bin
+        # Sample with replacement from unexposed indices
+        unexposed_sample = np.random.choice(list(available_unexposed_indices),
+                                            size=num_unexposed, replace=True)
         matched_unexposed_indices.extend(unexposed_sample)
+
+    # A + B is the number exposed to the given drug
+    n_exposed = len(matched_exposed_indices)
+
+    # A is the number exposed with the outcome.
+    #  Here computing A for all outcomes simultaneously, so exposed_with_outcome
+    #  is a vector where each index is an outcome and the value is the number
+    # drug exposed with the outcome.
+    exposed_with_outcome = all_outcomes[matched_exposed_indices].sum(axis=0)
+    exposed_with_outcome = np.array(exposed_with_outcome).flatten()
 
     # C + D is the number of propensity matched reports unexposed to the drug
     # Should always be 10 * n_exposed, but re-compute to be safe
