@@ -62,12 +62,14 @@ def compute_ABCD_one_drug(drug_exposures, drug_propensity_scores, all_outcomes,
         reports_in_bin = np.where(binned_scores == bin_number)[0]
         reports_in_bin = set(reports_in_bin.tolist())
 
+        # Indices of unexposed reports in this bin
+        available_unexposed_indices = reports_in_bin - set(exposed_indices)
+        if len(available_unexposed_indices) == 0:
+            continue
+
         # Indices of exposed reports in this bin
         bin_exposed_indices = reports_in_bin.intersection(set(exposed_indices))
         matched_exposed_indices.extend(list(bin_exposed_indices))
-
-        # Indices of unexposed reports in this bin
-        available_unexposed_indices = reports_in_bin - set(exposed_indices)
 
         # The number of unexposed to sample
         num_unexposed = 10 * num_exposed_bin
