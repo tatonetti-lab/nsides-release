@@ -30,13 +30,15 @@ def compute_ABCD_one_drug(drug_exposures, drug_propensity_scores, all_outcomes,
     Returns
     -------
     Tuple[numpy.ndarray, int, numpy.ndarray, int]
-        A, A + B, C, C + D. A is a vector of outcomes, where each value is the
-        number of drug exposed reports having the outcome. A + B is the total
-        number of exposed reports. C is a vector of outcomes, where each value
-        is the number of non-drug-exposed reports having the outcome using the
-        binned propensity score matching procedure. C + D is the total number
-        of the non-drug-exposed reports from the propensity score matching
-        procedure.
+        A, A + B, C, C + D. A is a vector of outcomes, where
+        each value is the number of reports with that exposure having the
+        outcome. A + B is the total number of exposed reports. C is a vector of
+        outcomes, where each value is the number of non-drug-exposed reports
+        having the outcome. C + D is the total number of the non-drug-exposed
+        reports.
+
+        Of note, all values represent counts after using the propensity score
+        matching procedure.
     """
     # Find the (row) indices of reports exposed to the drug
     exposed_indices, _ = drug_exposures.nonzero()
@@ -101,6 +103,29 @@ def compute_ABCD_one_drug(drug_exposures, drug_propensity_scores, all_outcomes,
 
 
 def compute_prr(exposed_with_outcome, n_exposed, unexposed_with_outcome, n_unexposed):
+    """
+    Compute PRR and PRR_error for a single drug. Uses A, B, C, and D as
+    computed using `compute_ABCD_one_drug`.
+
+    Parameters
+    ----------
+    exposed_with_outcome : numpy.ndarray
+        Vector of outcomes, where each value specifies the number of reports
+        exposed to the drug who had the outcome. These values are called A.
+    n_exposed : int
+        Number of reports exposed to the drug. This value is A + B, and it
+        depends only on the drug of interest, not the outcome.
+    unexposed_with_outcome : numpy.ndarray
+        Vector of outcomes, where each value specifies the number of reports
+        not exposed to the drug who had the outcome. These values are called C.
+    n_unexposed : int
+        Number of reports not exposed to the drug. This value is C + D, and it
+        depends only on the drug of interest, not the outcome.
+
+    Returns
+    -------
+    Tuple[numpy.ndarray, numpy.ndarray]
+    """
     if (n_exposed == 0) or (n_unexposed == 0):
         PRR = np.empty(exposed_with_outcome.shape)
         PRR_error = np.full(exposed_with_outcome.shape, np.inf)

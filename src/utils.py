@@ -5,6 +5,7 @@ import numpy as np
 
 
 def extract_indices(filename):
+    """Extract bootstrap and drug indices from a filename"""
     match = re.match(r'(?:.+_lrc_)([0-9]+)(?:__)([0-9]+)(?:\.npy)', filename)
     if match:
         bootstrap, drug = match.groups()
@@ -13,9 +14,13 @@ def extract_indices(filename):
         return False, False
 
 
-def extract_indices_twosides(filename, original=True):
-    if original:
+def extract_indices_twosides(filename, original_name=True):
+    """Extract indices of two drugs from a filename"""
+    # The original names of files were, for example, scores_lrc__1001_1888.npy
+    if original_name:
         match_string = r'(?:.+__)([0-9]+)(?:_)([0-9]+)(?=\.npy)'
+    # For ease of file identification, it may be desired to simplify file names
+    #  to, for example, 1001_1888.npy
     else:
         match_string = r'([0-9]+)(?:_)([0-9]+)(?=\.npy)'
     drug_a, drug_b = re.match(match_string, filename).groups()
