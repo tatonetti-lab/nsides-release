@@ -1,0 +1,6 @@
+mysql_password.txt
+data/
+
+.vscode/
+**.ipynb_checkpoints/
+**__pycache__/
