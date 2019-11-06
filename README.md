@@ -5,17 +5,25 @@ Analysis notebooks and database interaction scripts for the nsides project
 
 ### Preprocessing
 
-1. Download from the MYSQL database all outcomes (MedDRA concepts) (`nb/pre/1.get_outcomes_meddra.ipynb`)
-2. Create reformatted matrices of exposures and outcomes, also saving the id-to-index keys as vectors (`nb/pre/2.reformat_exposures_outcomes.ipynb`)
+1. Download from the MYSQL database all outcomes (MedDRA concepts) (`nb/1.mimir/1.get_outcomes_meddra.ipynb`)
+2. Create reformatted matrices of outcomes, also saving the id-to-index keys as vectors (`nb/2.preprocessing/1.format_outcomes_data.ipynb`)
+3. Create reformatted matrices of exposures, also saving the id-to-index keys as vectors (`nb/2.preprocessing/2.format_drug_exposures_data.ipynb`)
 
 ### Computation
 
-1. Create file maps for OFFSIDES and TWOSIDES (`nb/1.create_file_maps.ipynb`)
-2. Compute all propensity scores (by averaging across the 20 bootstrap iterations, and only those iterations where AUC > 0.5) (`nb/2.compute_average_propensity_scores_offsides.py`)
-3. Compute all disproportionality statistics for OFFSIDES (PRR, PRR_error, A, B, C, D, and mean (reporting frequency)) (`nb/3.compute_prr_offsides.ipynb`)
-4. Create a file map for TWOSIDES (`nb/6.create_twosides_file_map.ipynb`)
-5. Compute all disproportionality statistics for TWOSIDES (PRR, PRR_error, A, B, C, D, and mean (reporting frequency)) (`nb/7.compute_prr.py`)
-6. Combine all disproportionality data into single files, one for each `n` (ie. `offsides_prr.csv.xz`, `twosides.csv.xz`). (The PRR files were originally split to allow parallelization) (`nb/8.combine_prr.ipynb`)
+1. Create file maps for OFFSIDES and TWOSIDES (`scripts/1.compute_file_maps.py`)
+2. Compute all propensity scores (by averaging across the 20 bootstrap iterations, and only those iterations where AUC > 0.5) (`scripts/2.compute_propensity_scores.py`)
+3. Compute all disproportionality statistics for OFFSIDES and TWOSIDES (PRR, PRR_error, A, B, C, D, and mean (reporting frequency)) (`scripts/3.compute_prr.py`)
+4. Combine all disproportionality data into single files, one for each `n` (ie. `offsides_prr.csv.xz`, `twosides.csv.xz`). (The PRR files were originally split to allow parallelization) (`scripts/4.combine_prr_clean.py`)
+
+### Table formatting
+
+These notebooks, located in `nb/3.format_tables/`, reformat computed data into the tables that will be inserted into the database.
+
+### Table inserts
+
+These notebooks are run on `mimir` and they insert created tables and check various facts about the tables, once inserted.
+For more information, see the notebooks at `nb/4.insert_mimir_tables/`.
 
 # Method notes
 
@@ -69,17 +77,14 @@ The `data/` layout I employed is the following:
 |   |   |   +-- 0.npz
 |   |   |   +-- ... (not all-inclusive)
 |   |   |   +-- 4391.npz
-|   |   +-- 2
-|   |   |   +-- ?_?.npz
-|   |   |   +-- ... (not all-inclusive)
-|   |   |   +-- ?_?.npz
 |   +-- prr
 |   |   +-- 1
 |   |   |   +-- 0.csv.xz
 |   |   |   +-- ... (not all-inclusive)
 |   |   |   +-- 4391.csv.xz
 |   |   +-- 2
-|   +-- meta
+|   |   |   +-- ....csv.xz
+|   +-- meta_formatted
 |   +-- tables
 |   +-- output_archives
 ```
@@ -139,28 +144,24 @@ In these cases simply no unexposed cases were added for the bin.
 These files are each between 8 and 160 KB.
 The combined, `data/full_prr.csv.xz` file is 52 MB, though it excludes rows with $PRR = `NaN`$.
 
-### `meta`
+### `meta_formatted`
 
 This directory is for a number of files, including the following:
 
-* `all_auc.csv`
-    * Built in `nb/4.compute_scores.py` from the `log_lrc_**__**.npy` files in `archives/scores_*.tgz` archives.
-* `all_drug_exposures.npz`
-    * Matrix of reports by drugs. Built in `nb/3.reformat_exposures_outcomes.ipynb`.
-* `all_outcomes_meddra.npz`
-    * Matrix of reports by outcomes. Built in `nb/3.reformat_exposures_outcomes.ipynb`.
-* `all_reportids_IN.npy`
+* `drug_exposure_matrix.npz`
+    * Matrix of reports by drugs.
+* `outcome_matrix.npz`
+    * Matrix of reports by outcomes.
+* `report_id_vector.npy`
     * Vector giving the report ID at each index in the matrix
-* `drugs_vector.npy`
-    * Vector giving the drug ID at each index in the matrix. Built in `nb/3.reformat_exposures_outcomes.ipynb`.
-* `file_map.csv`
-    * Computed in `nb/1.create_file_map.ipynb`, this file shows where score and log files are located.
+* `drug_id_vector.npy`
+    * Vector giving the drug ID at each index in the matrix.
+* `file_map_offsides.csv`
+    * This file shows where score and log files are located.
 * `outcomes_table.csv.xz`
-    * Equivalent to the `standard_case_outcome` table from `effect_aeolus` on mimir. Built in `nb/2.get_outcomes_meddra.ipynb`.
-* `outcomes_vector_meddra.npy`
-    * Vector giving the outcome ID at each index in the matrix. Built in `nb/3.reformat_exposures_outcomes.ipynb`.
-* `reports_outcomes.csv.xz`
-    * Essentially the information that we use from `outcomes_table.csv.xz` along with matrix indices. Built in `nb/3.reformat_exposures_outcomes.ipynb`.
+    * Equivalent to the `standard_case_outcome` table from `effect_aeolus` on mimir.
+* `outcome_id_vector.npy`
+    * Vector giving the outcome ID at each index in the matrix.
 
 ### `tables`
 
