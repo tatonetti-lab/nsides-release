@@ -1,5 +1,5 @@
-# nsides
-Analysis notebooks and database interaction scripts for the nsides project
+# NSIDES project
+Analysis notebooks and database interaction scripts for the NSIDES project
 
 # Overview - Steps to run everything
 
