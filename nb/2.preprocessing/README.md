@@ -11,7 +11,7 @@ To begin, the following files should be in the `data/meta_unformatted/` director
 
 ## Procedure
 
-1. The first notebook, `1.get_outcomes_meddra.ipynb` should be run on the `mimir` server, as that is where the relevant database is located.
+1. The first notebook, `1.get_outcomes_meddra.ipynb` should be run on the local server, as that is where the relevant database is located.
 This produces `outcomes_table.csv.xz`, which is the entire database table for outcomes, and which should be copied to `data/meta_unformatted` on the local machine.
 2. The second notebook, `2.format_outcomes_data.ipynb`, creates the following: a matrix of reports by outcomes (in MedDRA coding), a vector giving the MedDRA ID corresponding to each index in the matrix, and a vector of report IDs.
 Respectively, these are `data/meta_formatted/outcome_matrix.npz`, `data/meta_formatted/outcome_id_vector.npy`, and `data/meta_formatted/report_id_vector.npy`.

@@ -1,11 +1,16 @@
 # NSIDES project
-Analysis notebooks and database interaction scripts for the NSIDES project
+
+Analysis notebooks and database interaction scripts for the NSIDES project.
+The goal of the NSIDES project is to extend adverse event discovery (specifically using FDA AERS data as in [[1](#1)]) to higher-order drug combinations, such as triplets, quadruplets, etc.
+
+<a name="1">[1]</a> Tatonetti, Nicholas P., P. Ye Patrick, Roxana Daneshjou, and Russ B. Altman. "Data-driven prediction of drug effects and interactions." Science translational medicine 4, no. 125 (2012): 125ra31-125ra31. [doi:10.1126/scitranslmed.3003377](https://doi.org/10.1126/scitranslmed.3003377)
+
 
 # Overview - Steps to run everything
 
 ### Preprocessing
 
-1. Download from the MYSQL database all outcomes (MedDRA concepts) (`nb/1.mimir/1.get_outcomes_meddra.ipynb`)
+1. Download from the MYSQL database all outcomes (MedDRA concepts) (`nb/1.server/1.get_outcomes_meddra.ipynb`)
 2. Create reformatted matrices of outcomes, also saving the id-to-index keys as vectors (`nb/2.preprocessing/1.format_outcomes_data.ipynb`)
 3. Create reformatted matrices of exposures, also saving the id-to-index keys as vectors (`nb/2.preprocessing/2.format_drug_exposures_data.ipynb`)
 
@@ -22,8 +27,8 @@ These notebooks, located in `nb/3.format_tables/`, reformat computed data into t
 
 ### Table inserts
 
-These notebooks are run on `mimir` and they insert created tables and check various facts about the tables, once inserted.
-For more information, see the notebooks at `nb/4.insert_mimir_tables/`.
+These notebooks are run on the local server and they insert created tables and check various facts about the tables, once inserted.
+For more information, see the notebooks at `nb/4.insert_tables/`.
 
 # Method notes
 
@@ -159,7 +164,7 @@ This directory is for a number of files, including the following:
 * `file_map_offsides.csv`
     * This file shows where score and log files are located.
 * `outcomes_table.csv.xz`
-    * Equivalent to the `standard_case_outcome` table from `effect_aeolus` on mimir.
+    * Equivalent to the `standard_case_outcome` table from `effect_aeolus` on the local server.
 * `outcome_id_vector.npy`
     * Vector giving the outcome ID at each index in the matrix.
 
