@@ -49,23 +49,21 @@ def get_subfiles(archive_file_path, n_drugs):
                 file_type = re.match('^[a-z]+(?=_.+)', subfile).group()
             file_locations.append([drug, bootstrap, file_type, subfile,
                                    archive_file_path.name])
-    elif n_drugs == 2:
+    elif n_drugs > 1:
+        n_to_regex = {
+            2: r'([a-z]+)(?:.*?__)([0-9]+)(?:_)([0-9]+)(?=\.npy)',
+            3: r'([a-z]+)(?:.*?__)([0-9]+)(?:_)([0-9]+)(?:_)([0-9]+)(?=\.npy)',
+        }
+        pattern = n_to_regex[n_drugs]
+
         for subfile in subfiles:
-            file_name_match = re.match(r'([a-z]+)(?:.*?__)([0-9]+)(?:_)([0-9]+)(?=\.npy)', subfile)
+            file_name_match = re.match(pattern, subfile)
             if not file_name_match:
                 raise ValueError(f'{archive_file_path.name} contained {subfile} not matched')
-            file_type, drug_1, drug_2 = file_name_match.groups()
-            drug_1, drug_2 = int(drug_1), int(drug_2)
-            file_locations.append([drug_1, drug_2, file_type, subfile,
-                                   archive_file_path.name])
-    elif n_drugs == 3:
-        for subfile in subfiles:
-            file_name_match = re.match(r'([a-z]+)(?:.*?__)([0-9]+)(?:_)([0-9]+)(?:_)([0-9]+)(?=\.npy)', subfile)
-            if not file_name_match:
-                raise ValueError(f'{archive_file_path.name} contained {subfile} not matched')
-            file_type, drug_1, drug_2, drug_3 = file_name_match.groups()
-            drug_1, drug_2, drug_3 = int(drug_1), int(drug_2), int(drug_3)
-            file_locations.append([drug_1, drug_2, drug_3, file_type, subfile,
+            match = file_name_match.groups()
+            file_type = match[0]
+            drugs = tuple(map(int, match[1:]))
+            file_locations.append([*drugs, file_type, subfile,
                                    archive_file_path.name])
     return file_locations
 
@@ -99,21 +97,18 @@ def compute_file_map(n_drugs, archives_path):
 
 
 def compute_all_filemaps():
-    # Path to where the `.tgz` archives are stored
-    archives_path = pathlib.Path('/data/archives/')
-
-    # Path where the file maps will be saved
-    meta_path = pathlib.Path('/data/meta')
-
-    # Compute and save OFFSIDES file map
-    offsides_file_map = compute_file_map(1, archives_path.joinpath('1/'))
-    offsides_file_map.to_csv(meta_path.joinpath('file_map_offsides.csv'),
-                             index=False)
-
-    # Compute and save TWOSIDES file map
-    twosides_file_map = compute_file_map(2, archives_path.joinpath('2/'))
-    twosides_file_map.to_csv(meta_path.joinpath('file_map_twosides.csv'),
-                             index=False)
+    # # Path to where the `.tgz` archives are stored
+    # archives_path = pathlib.Path('/data/archives/')
+    # # Path where the file maps will be saved
+    # meta_path = pathlib.Path('/data/meta')
+    # # Compute and save OFFSIDES file map
+    # offsides_file_map = compute_file_map(1, archives_path.joinpath('1/'))
+    # offsides_file_map.to_csv(meta_path.joinpath('file_map_offsides.csv'),
+    #                          index=False)
+    # # Compute and save TWOSIDES file map
+    # twosides_file_map = compute_file_map(2, archives_path.joinpath('2/'))
+    # twosides_file_map.to_csv(meta_path.joinpath('file_map_twosides.csv'),
+    #                          index=False)
 
     # Compute and save THREESIDES file map
     nsides_root = pathlib.Path('/data2/nsides/')
