@@ -1,9 +1,9 @@
 import concurrent.futures
 import functools
 import pathlib
-import re
 import sys
 import tarfile
+from typing import List, Tuple, Union
 
 import pandas as pd
 import tqdm
@@ -12,19 +12,25 @@ sys.path.insert(0, '../src/')
 import utils  # noqa:E402
 
 
-def get_subfiles(archive_file_path, n_drugs):
+def n_drug_to_column_names(n: int) -> Tuple[str]:
     """
-    Find all score, interaction, and log files within a `.tar.gz` archive.
-    Each subfile is represented as a list.
-
     For OFFSIDES, files are [drug, bootstrap_iteration, file_type,
     subfile_name, archive_path].
 
-    For TWOSIDES, files are [drug_1, drug_2, file_type, subfile_name,
+    For NSIDES, files are [drug_1, ..., drug_N, file_type, subfile_name,
     archive_path]
+    """
+    if n == 1:
+        return ('drug', 'bootstrap')
+    else:
+        return tuple(f'drug_index_{i}' for i in range(1, n + 1))
 
-    For THREESIDES, files are [drug_1, drug_2, drug_3, file_type, subfile_name,
-    archive_path]
+
+def get_subfiles(archive_file_path: pathlib.Path,
+                 n_drugs: int) -> List[List[Union[int, str]]]:
+    """
+    Find all score, interaction, and log files within a `.tar.gz` archive.
+    Each subfile is represented as a list.
     """
     file_locations = list()
     try:
@@ -35,40 +41,17 @@ def get_subfiles(archive_file_path, n_drugs):
     except EOFError:
         return None
 
-    if n_drugs == 1:
-        for subfile in subfiles:
-            if 'interaction' in subfile:
-                drug = re.match(r'(?:interactions__)([0-9]+)(?:\.npy)', subfile)
-                if not drug:
-                    raise ValueError(f'{archive_file_path.name} contained {subfile} not matched')
-                drug = drug.group(1)
-                bootstrap = None
-                file_type = 'interaction'
-            else:
-                drug, bootstrap = utils.extract_indices(subfile)
-                file_type = re.match('^[a-z]+(?=_.+)', subfile).group()
-            file_locations.append([drug, bootstrap, file_type, subfile,
-                                   archive_file_path.name])
-    elif n_drugs > 1:
-        n_to_regex = {
-            2: r'([a-z]+)(?:.*?__)([0-9]+)(?:_)([0-9]+)(?=\.npy)',
-            3: r'([a-z]+)(?:.*?__)([0-9]+)(?:_)([0-9]+)(?:_)([0-9]+)(?=\.npy)',
-        }
-        pattern = n_to_regex[n_drugs]
-
-        for subfile in subfiles:
-            file_name_match = re.match(pattern, subfile)
-            if not file_name_match:
-                raise ValueError(f'{archive_file_path.name} contained {subfile} not matched')
-            match = file_name_match.groups()
-            file_type = match[0]
-            drugs = tuple(map(int, match[1:]))
-            file_locations.append([*drugs, file_type, subfile,
-                                   archive_file_path.name])
+    for subfile in subfiles:
+        file_name_match = utils.extract_filepath_info(subfile)
+        if not file_name_match:
+            raise ValueError(f'{archive_file_path.name} contained '
+                             f'{subfile} not matched')
+        file_locations.append([*file_name_match, subfile, archive_file_path])
     return file_locations
 
 
-def compute_file_map(n_drugs, archives_path):
+def compute_file_map(archives_path: pathlib.Path,
+                     n_drugs: int) -> pd.DataFrame:
     """Compute a file map for an entire directory of archives"""
     get_subfiles_partial = functools.partial(get_subfiles, n_drugs=n_drugs)
 
@@ -83,13 +66,7 @@ def compute_file_map(n_drugs, archives_path):
     flattened_file_locations = [l for l in file_locations if l is not None]
     flattened_file_locations = [i for l in flattened_file_locations for i in l]
 
-    # First two column names depend on the number of drugs
-    n_drug_to_column_names = {
-        1: ('drug', 'bootstrap'),
-        2: ('drug_index_1', 'drug_index_2'),
-        3: ('drug_index_1', 'drug_index_2', 'drug_index_3')
-    }
-    column_names = [*n_drug_to_column_names[n_drugs], 'file_type', 'file_name',
+    column_names = ['file_type', *n_drug_to_column_names(n_drugs), 'file_name',
                     'archive_file']
 
     # Instantiate DataFrame and save to disk immediately
@@ -112,7 +89,7 @@ def compute_all_filemaps():
 
     # Compute and save THREESIDES file map
     nsides_root = pathlib.Path('/data2/nsides/')
-    threesides_file_map = compute_file_map(3, nsides_root.joinpath('dddi/'))
+    threesides_file_map = compute_file_map(nsides_root.joinpath('dddi/'), 3)
     threesides_file_map.to_csv(
         nsides_root.joinpath('meta/file_map_twosides.csv'), index=False)
 
