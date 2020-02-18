@@ -14,18 +14,11 @@ def extract_indices(filename):
         return False, False
 
 
-def extract_indices_twosides(filename, original_name=True):
-    """Extract indices of two drugs from a filename"""
-    # The original names of files were, for example, scores_lrc__1001_1888.npy
-    if original_name:
-        match_string = r'(?:.+__)([0-9]+)(?:_)([0-9]+)(?=\.npy)'
-    # For ease of file identification, it may be desired to simplify file names
-    #  to, for example, 1001_1888.npy
-    else:
-        match_string = r'([0-9]+)(?:_)([0-9]+)(?=\.npy)'
-    drug_a, drug_b = re.match(match_string, filename).groups()
-    drug_a, drug_b = int(drug_a), int(drug_b)
-    return drug_a, drug_b
+def extract_indices_nsides(filename):
+    """Extract indices of N drugs from a filename"""
+    drugs_match = re.match(r'(?:.+__)([0-9_]+)(?=\.npy)', filename).group(1)
+    drug_ids = tuple(map(int, drugs_match.split('_')))
+    return drug_ids
 
 
 def extract_drug_files(tar_path_to_members, extract_dir):
