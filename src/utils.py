@@ -16,7 +16,7 @@ def extract_indices(filename):
 
 def extract_indices_nsides(filename):
     """Extract indices of N drugs from a filename"""
-    drugs_match = re.match(r'(?:.+__)([0-9_]+)(?=\.npy)', filename).group(1)
+    drugs_match = re.match(r'(?:.+__)*([0-9_]+)(?=\.npy)', filename).group(1)
     drug_ids = tuple(map(int, drugs_match.split('_')))
     return drug_ids
 
