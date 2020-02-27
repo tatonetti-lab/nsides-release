@@ -109,7 +109,7 @@ def main():
 
     # Load score archives that have yet to be computed
     score_archive_paths = [path for path in archives_path.glob('scores_*.tgz')
-                           if path not in finished_archives]
+                           if path.as_posix() not in finished_archives]
 
     run_one_archive = functools.partial(
         prr_one_archive_nsides,
