@@ -126,7 +126,8 @@ def main():
 
     with concurrent.futures.ProcessPoolExecutor() as executor:
         results = list(  # noqa: F841
-            tqdm.tqdm(executor.map(run_one_archive, score_archive_paths))
+            tqdm.tqdm(executor.map(run_one_archive, score_archive_paths),
+                      total=len(score_archive_paths))
         )
 
 
