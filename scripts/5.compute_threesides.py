@@ -52,8 +52,7 @@ def prr_one_archive_nsides(archive_path, extract_dir, report_exposure_matrix,
 
     # Get indices of drug combinations stored in the archive
     drug_indices = [
-        utils.extract_filepath_info(file.name, original=False)
-        for file in extracted_paths
+        utils.extract_filepath_info(file.name) for file in extracted_paths
     ]
 
     prr_one_combo = functools.partial(
