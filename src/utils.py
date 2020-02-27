@@ -1,34 +1,31 @@
+import pathlib
 import re
 import tarfile
+from typing import Dict, List, Tuple, Union
 
-import numpy as np
-
-
-def extract_indices(filename):
-    """Extract bootstrap and drug indices from a filename"""
-    match = re.match(r'(?:.+_lrc_)([0-9]+)(?:__)([0-9]+)(?:\.npy)', filename)
-    if match:
-        bootstrap, drug = match.groups()
-        return int(drug), int(bootstrap)
-    else:
-        return False, False
+import numpy
 
 
-def extract_indices_twosides(filename, original_name=True):
-    """Extract indices of two drugs from a filename"""
-    # The original names of files were, for example, scores_lrc__1001_1888.npy
-    if original_name:
-        match_string = r'(?:.+__)([0-9]+)(?:_)([0-9]+)(?=\.npy)'
-    # For ease of file identification, it may be desired to simplify file names
-    #  to, for example, 1001_1888.npy
-    else:
-        match_string = r'([0-9]+)(?:_)([0-9]+)(?=\.npy)'
-    drug_a, drug_b = re.match(match_string, filename).groups()
-    drug_a, drug_b = int(drug_a), int(drug_b)
-    return drug_a, drug_b
+def extract_filepath_info(filename: str) -> List[Union[int, str]]:
+    """Parse a filename into information and drug/bootstrap indices"""
+    path_matches = re.match(
+        r'(^[a-z]+)*(?:[a-z_]+_)*([0-9_]+)(?=\.npy)', filename).groups()
+
+    output = list()
+
+    # First element is None if the filename only contains indices.
+    # eg. `interactions__100.npy` vs length 1 `100.npy`
+    if path_matches[0] is not None:
+        output.append(path_matches[0])
+
+    filtered_indices = filter(len, path_matches[-1].split('_'))
+    output.extend(list(map(int, filtered_indices)))
+    return output
 
 
-def extract_drug_files(tar_path_to_members, extract_dir):
+def extract_drug_files(
+        tar_path_to_members: Dict[pathlib.Path, List[tarfile.TarInfo]],
+        extract_dir: pathlib.Path) -> Dict[tarfile.TarInfo, pathlib.Path]:
     """
     Extract member files from a number of tar archives, returning extracted
     paths.
@@ -55,7 +52,8 @@ def extract_drug_files(tar_path_to_members, extract_dir):
     return file_name_to_extracted_path
 
 
-def load_scores_offsides(drug_index, n_rows, scores_path):
+def load_scores_offsides(drug_index: int, n_rows: int,
+                         scores_path: pathlib.Path) -> numpy.ndarray:
     """
     Parameters
     ----------
@@ -70,7 +68,7 @@ def load_scores_offsides(drug_index, n_rows, scores_path):
     numpy.ndarray
     """
     score_path = scores_path.joinpath(f'{drug_index}.npz')
-    scores_item = np.load(score_path)
+    scores_item = numpy.load(score_path)
 
     # Slice to the relevant number of reports (originally 4_838_588, not 4_694_086)
     scores = scores_item['scores']
@@ -78,10 +76,11 @@ def load_scores_offsides(drug_index, n_rows, scores_path):
     return scores
 
 
-def load_scores_nsides(drug_indices, n_rows, scores_path):
+def load_scores_nsides(drug_indices: List[int], n_rows: int,
+                       scores_path: pathlib.Path):
     indices_string = '_'.join(map(str, drug_indices))
     score_path = scores_path.joinpath(indices_string + '.npy')
-    scores = np.load(score_path)
+    scores = numpy.load(score_path)
 
     # Slice to the relevant number of reports (originally 4_838_588, not 4_694_086)
     scores = scores[:n_rows]
