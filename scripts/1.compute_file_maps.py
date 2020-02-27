@@ -75,7 +75,7 @@ def compute_file_map(n_drugs, archives_path):
     get_subfiles_partial = functools.partial(get_subfiles, n_drugs=n_drugs)
 
     archive_files = list(archives_path.glob('scores_*.tgz'))
-    with concurrent.futures.ProcessPoolExecutor() as executor:
+    with concurrent.futures.ProcessPoolExecutor(max_workers=10) as executor:
         file_locations = list(tqdm.tqdm(
             executor.map(get_subfiles_partial, archive_files),
             total=len(archive_files)
@@ -99,21 +99,21 @@ def compute_file_map(n_drugs, archives_path):
 
 
 def compute_all_filemaps():
-    # Path to where the `.tgz` archives are stored
-    archives_path = pathlib.Path('/data/archives/')
-
-    # Path where the file maps will be saved
-    meta_path = pathlib.Path('/data/meta')
-
-    # Compute and save OFFSIDES file map
-    offsides_file_map = compute_file_map(1, archives_path.joinpath('1/'))
-    offsides_file_map.to_csv(meta_path.joinpath('file_map_offsides.csv'),
-                             index=False)
-
-    # Compute and save TWOSIDES file map
-    twosides_file_map = compute_file_map(2, archives_path.joinpath('2/'))
-    twosides_file_map.to_csv(meta_path.joinpath('file_map_twosides.csv'),
-                             index=False)
+#     # Path to where the `.tgz` archives are stored
+#     archives_path = pathlib.Path('/data/archives/')
+# 
+#     # Path where the file maps will be saved
+#     meta_path = pathlib.Path('/data/meta')
+# 
+#     # Compute and save OFFSIDES file map
+#     offsides_file_map = compute_file_map(1, archives_path.joinpath('1/'))
+#     offsides_file_map.to_csv(meta_path.joinpath('file_map_offsides.csv'),
+#                              index=False)
+# 
+#     # Compute and save TWOSIDES file map
+#     twosides_file_map = compute_file_map(2, archives_path.joinpath('2/'))
+#     twosides_file_map.to_csv(meta_path.joinpath('file_map_twosides.csv'),
+#                              index=False)
 
     # Compute and save THREESIDES file map
     nsides_root = pathlib.Path('/data2/nsides/')
