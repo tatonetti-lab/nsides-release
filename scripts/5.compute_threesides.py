@@ -104,9 +104,9 @@ def main():
     )
 
     # Get the archives that have already been computed
-    success_log_path = 'threesides_success_log.log'
+    success_log_path = '../log/threesides_success_log.log'
     finished_archives = load_finished_archives(success_log_path)
-    error_log_path = 'threesides_error_log.log'
+    error_log_path = '../log/threesides_error_log.log'
 
     # Load score archives that have yet to be computed
     score_archive_paths = [path for path in archives_path.glob('scores_*.tgz')
