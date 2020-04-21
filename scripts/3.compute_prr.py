@@ -16,7 +16,7 @@ import parallel_utils  # noqa:E402
 import utils  # noqa:E402
 
 
-def extract_scores_twosides(tar_file_path, computed_scores_path):
+def extract_scores_nsides(tar_file_path, computed_scores_path):
     """Extract all propensity score files from a tar file at the given path"""
     try:
         tar = tarfile.open(tar_file_path, mode='r:gz')
@@ -68,8 +68,7 @@ def prr_one_archive_twosides(archive_path, file_map, extract_dir,
                              report_exposure_matrix, report_outcome_matrix,
                              drug_id_vector, outcome_id_vector, prr_save_path):
     # Extract propensity scores from archive
-    extracted_paths = parallel_utils.extract_scores_twosides(archive_path,
-                                                             extract_dir)
+    extracted_paths = extract_scores_nsides(archive_path, extract_dir)
 
     if extracted_paths is None:
         return
